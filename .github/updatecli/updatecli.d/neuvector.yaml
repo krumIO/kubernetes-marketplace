@@ -8,7 +8,7 @@ sources:
     name: Get latest neuvector Helm chart version
     spec:
       url: https://neuvector.github.io/neuvector-helm
-      name: neuvector-core
+      name: neuvector/core
   app:
     kind: githubrelease
     name: Get latest neuvector app version
