@@ -1,0 +1,68 @@
+---
+name: "Bump CIVO marketplace neuvector version"
+pipelineid: neuvector
+
+sources:
+  chart:
+    kind: helmchart
+    name: Get latest neuvector Helm chart version
+    spec:
+      url: https://neuvector.github.io/helm-charts
+      name: neuvector
+  app:
+    kind: githubrelease
+    name: Get latest neuvector app version
+    spec:
+      owner: neuvector
+      repository: neuvector
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      username: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+
+targets:
+  manifest:
+    kind: yaml
+    name: Update neuvector/manifest.yaml
+    scmid: kubernetes-marketplace
+    transformers:
+      - addprefix: v
+    spec:
+      file: neuvector/manifest.yaml
+      key: version
+    sourceid: chart
+
+  install:
+    kind: file
+    name: Update neuvector/install.sh
+    disablesourceinput: true
+    scmid: kubernetes-marketplace
+    spec:
+      file: neuvector/install.sh
+      matchpattern: '--version (v{0,1})(\d*.\d*.\d*)'
+      replacepattern: '--version {{ source "chart" }}'
+
+# Define git repository configuration to know where to push changes
+# Values are templated and provided via the values.yaml so we can easily 
+# adapt to the repository owner.
+scms:
+  kubernetes-marketplace:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      branch: "{{ .github.branch }}"
+      username: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+
+actions:  
+  kubernetes-marketplace:
+    kind: "github/pullrequest"
+    scmid: kubernetes-marketplace
+    title: 'Bump neuvector Helm chart to {{ source "chart" }}'
+    description: 'Notify maintainers: @krumware'
+    spec:
+      usetitleforautomerge: true
+      mergemethod: squash
+      labels:
+        - enhancement 
