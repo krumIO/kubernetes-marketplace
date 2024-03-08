@@ -1,7 +1,7 @@
 ---
 name: neuvector
 title: NeuVector
-version: latest
+version: v5.2.4
 maintainer: "@saiyampathak"
 description: "A full lifecycle container security platform"
 url: https://www.suse.com/products/neuvector/
